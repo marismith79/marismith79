@@ -1,0 +1,49 @@
+'''
+This code extracts info from pubmed using metapub and an ncbi api key. It takes the extracted details from your query and places them into a csv file
+
+Created Dec 23, 2023 | Edited Jan 1, 2024
+
+Inputs:
+  Number of articles to extract (10 article per api maximum)
+  List of words to query 
+Outputs:
+  An article table viewable in the terminal
+  a csv file with the extracted data in it
+'''
+
+
+from metapub import PubMedFetcher
+import pandas as pd
+
+fetch = PubMedFetcher('eutils')
+data = []
+
+def main(): 
+    num_of_articles = input("Enter Number of Articles to Query: \n")
+    query = input("Enter a list of words to : \n").split(",")
+    article_table = fetch_article_data(query, num_of_articles)
+    print(article_table)
+
+
+def fetch_article_data(any_keywords, num_of_articles):
+    fetch = PubMedFetcher('eutils')
+    if len(any_keywords)==1:
+        search_query = any_keywords[0]
+    else:
+        search_query = ' AND '.join(any_keywords)
+
+    pmids = fetch.pmids_for_query(search_query,retmax=num_of_articles)
+
+    for pmid in pmids:
+        article = fetch.article_by_pmid(pmid) #include article.methods to the return line
+        data.append({'PMID': article.pmid, 'Title': article.title, 'Authors': ', '.join(article.authors)})
+    
+    df = pd.DataFrame(data)
+    df.to_csv("bio_reports.csv", sep=',', index=False, encoding='utf-8')
+    return df
+
+def get_reports(filename):
+    pass
+
+if __name__ == "__main__" :
+   main()
